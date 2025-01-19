@@ -12,7 +12,7 @@ ThemeData lightTheme = ThemeData.light(useMaterial3: true).copyWith(
     onSecondary: Colors.white,
     error: Colors.red,
     onError: Colors.white,
-    surface: Colors.white,
+    surface: Colors.blue.shade50,
     onSurface: Colors.black,
     tertiary: Colors.grey.shade200,
     onTertiary: Colors.white,
