@@ -1,11 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:quiz_app_flutter_task/models/options_model.dart';
+import 'package:quiz_app_flutter_task/models/quiz_topic_model.dart';
+import 'package:quiz_app_flutter_task/services/get_quiz.dart';
 import 'package:quiz_app_flutter_task/ui/next_button.dart';
 import 'package:quiz_app_flutter_task/ui/options_tile.dart';
 import 'package:quiz_app_flutter_task/ui/prev_button.dart';
 
-class QuizPage extends StatelessWidget {
+class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
+
+  @override
+  State<QuizPage> createState() => _QuizPageState();
+}
+
+class _QuizPageState extends State<QuizPage> {
+  bool isVisible = false;
+  QuizTopicModel? quizData;
+
+  fetchQuizData() async {
+    quizData = await GetQuiz().getQuizData();
+    if (quizData != null) {
+      setState(() {
+        isVisible = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    fetchQuizData();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -26,124 +51,109 @@ class QuizPage extends StatelessWidget {
           child: Padding(
             padding: const EdgeInsets.all(10),
             child: Center(
-              child: Visibility(
-                visible: true,
-                replacement: const CircularProgressIndicator(
-                  strokeCap: StrokeCap.round,
-                  strokeWidth: 6,
-                  // value: 0.5,
-                ),
-                child: Column(
-                  spacing: 20,
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              child: isVisible
+                  ? Column(
+                      spacing: 20,
                       children: [
-                        CloseButton(
-                          color: Theme.of(context).colorScheme.primary,
-                          style: ButtonStyle(
-                            backgroundColor: WidgetStatePropertyAll(
-                              Theme.of(context).colorScheme.onPrimary,
-                            ),
-                          ),
-                          onPressed: () async {
-                            final bool shouldPop =
-                                await showConfirmDialog(context) ?? false;
-                            if (context.mounted && shouldPop) {
-                              Navigator.pop(context);
-                            }
-                          },
+                        QuizHeader(quizData: quizData),
+                        const Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [PrevButton(), NextButton()],
                         ),
-                        const QuizTitle(),
-                      ],
-                    ),
-                    const Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [PrevButton(), NextButton()],
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 10),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        spacing: 10,
-                        children: [
-                          Expanded(
-                            child: LinearProgressIndicator(
-                              value: 0.3,
-                              backgroundColor:
-                                  Theme.of(context).colorScheme.onSecondary,
-                              color: Theme.of(context).colorScheme.secondary,
-                              borderRadius: BorderRadius.circular(10),
-                              minHeight: 10,
-                            ),
-                          ),
-                          Text(
-                            '3/10',
-                            style: TextStyle(
-                              fontWeight: FontWeight.w900,
-                              color: Theme.of(context).colorScheme.onSurface,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const QuestionTile(
-                      queNumber: 1,
-                      queString:
-                          "If the base sequence in DNA is 5' AAAT 3' then the base sequence in mRNA is :",
-                    ),
-                    Options(
-                      options: [
-                        Option(
-                          id: 13379,
-                          description: "5'UUUU3'",
-                          questionId: 3342,
-                          isCorrect: false,
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                          unanswered: false,
-                          photoUrl: null,
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: QuizProgressIndicator(quizData: quizData),
                         ),
-                        Option(
-                          id: 13379,
-                          description: "3'UUUU5'",
-                          questionId: 3342,
-                          isCorrect: false,
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                          unanswered: false,
-                          photoUrl: null,
+                        QuestionTile(
+                          queNumber: 1,
+                          queString: quizData!.questions[0].description,
                         ),
-                        Option(
-                          id: 13379,
-                          description: "5'AAAU3'",
-                          questionId: 3342,
-                          isCorrect: true,
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                          unanswered: false,
-                          photoUrl: null,
-                        ),
-                        Option(
-                          id: 13379,
-                          description: "3'AAAU5'",
-                          questionId: 3342,
-                          isCorrect: false,
-                          createdAt: DateTime.now(),
-                          updatedAt: DateTime.now(),
-                          unanswered: false,
-                          photoUrl: null,
+                        Options(
+                          options: quizData!.questions[0].options,
                         ),
                       ],
+                    )
+                  : const CircularProgressIndicator(
+                      strokeCap: StrokeCap.round,
+                      strokeWidth: 6,
+                      // value: 0.5,
                     ),
-                  ],
-                ),
-              ),
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class QuizHeader extends StatelessWidget {
+  const QuizHeader({
+    super.key,
+    required this.quizData,
+  });
+
+  final QuizTopicModel? quizData;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        CloseButton(
+          color: Theme.of(context).colorScheme.primary,
+          style: ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(
+              Theme.of(context).colorScheme.onPrimary,
+            ),
+          ),
+          onPressed: () async {
+            final bool shouldPop = await showConfirmDialog(context) ?? false;
+            if (context.mounted && shouldPop) {
+              Navigator.pop(context);
+            }
+          },
+        ),
+        QuizTitle(
+          quizTitle: quizData!.title,
+          quizTopic: quizData!.topic,
+        ),
+      ],
+    );
+  }
+}
+
+class QuizProgressIndicator extends StatelessWidget {
+  const QuizProgressIndicator({
+    super.key,
+    required this.quizData,
+  });
+
+  final QuizTopicModel? quizData;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
+      spacing: 10,
+      children: [
+        Expanded(
+          child: LinearProgressIndicator(
+            value: 1 / quizData!.questionsCount,
+            backgroundColor: Theme.of(context).colorScheme.onSecondary,
+            color: Theme.of(context).colorScheme.secondary,
+            borderRadius: BorderRadius.circular(10),
+            minHeight: 10,
+          ),
+        ),
+        Text(
+          '1/${quizData!.questionsCount}',
+          style: TextStyle(
+            fontWeight: FontWeight.w900,
+            color: Theme.of(context).colorScheme.onSurface,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -252,7 +262,11 @@ Future<bool?> showConfirmDialog(BuildContext context) {
 class QuizTitle extends StatelessWidget {
   const QuizTitle({
     super.key,
+    required this.quizTitle,
+    required this.quizTopic,
   });
+  final String quizTitle;
+  final String quizTopic;
 
   @override
   Widget build(BuildContext context) {
@@ -263,13 +277,13 @@ class QuizTitle extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           Text(
-            'Genetics and Evolution',
+            quizTitle,
             overflow: TextOverflow.ellipsis,
             maxLines: 1,
             style: Theme.of(context).textTheme.headlineMedium,
           ),
           Text(
-            'The Molecular Basis of Inheritance',
+            quizTopic,
             overflow: TextOverflow.ellipsis,
             maxLines: 2,
             textAlign: TextAlign.start,

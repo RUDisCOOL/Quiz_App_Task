@@ -1,10 +1,10 @@
-// import 'dart:convert';
+import 'dart:convert';
 import 'package:quiz_app_flutter_task/models/questions_model.dart';
 
-// QuizTopicModel quizTopicModelFromJson(String str) =>
-//     QuizTopicModel.fromJson(json.decode(str));
+QuizTopicModel quizTopicModelFromJson(String str) =>
+    QuizTopicModel.fromJson(json.decode(str));
 
-// String quizTopicModelToJson(QuizTopicModel data) => json.encode(data.toJson());
+String quizTopicModelToJson(QuizTopicModel data) => json.encode(data.toJson());
 
 class QuizTopicModel {
   int id;
