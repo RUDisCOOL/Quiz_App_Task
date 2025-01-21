@@ -7,8 +7,11 @@ class OptionsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
+      onTap: () {},
+      borderRadius: BorderRadius.circular(25),
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        padding: const EdgeInsets.all(10),
+        margin: const EdgeInsets.all(5),
         decoration: BoxDecoration(
           color: isSelected
               ? Theme.of(context).colorScheme.secondary
@@ -25,8 +28,10 @@ class OptionsTile extends StatelessWidget {
               child: Text(
                 data,
                 textAlign: TextAlign.justify,
-                style: isSelected? Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: Theme.of(context).colorScheme.onSecondary):null,
+                style: isSelected
+                    ? Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: Theme.of(context).colorScheme.onSecondary)
+                    : null,
               ),
             ),
           ],

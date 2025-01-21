@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter_task/models/options_model.dart';
 import 'package:quiz_app_flutter_task/models/quiz_topic_model.dart';
+import 'package:quiz_app_flutter_task/providers/que_num_provider.dart';
 import 'package:quiz_app_flutter_task/services/get_quiz.dart';
 import 'package:quiz_app_flutter_task/ui/next_button.dart';
 import 'package:quiz_app_flutter_task/ui/options_tile.dart';
@@ -17,9 +19,12 @@ class _QuizPageState extends State<QuizPage> {
   bool isVisible = false;
   QuizTopicModel? quizData;
 
-  fetchQuizData() async {
+  fetchQuizData(BuildContext context) async {
+    final queNumProvider = Provider.of<QueNumProvider>(context, listen: false);
     quizData = await GetQuiz().getQuizData();
     if (quizData != null) {
+      queNumProvider.queNum = 1;
+      queNumProvider.queCount = quizData!.questionsCount;
       setState(() {
         isVisible = true;
       });
@@ -29,11 +34,14 @@ class _QuizPageState extends State<QuizPage> {
   @override
   void initState() {
     super.initState();
-    fetchQuizData();
+    fetchQuizData(context);
   }
 
   @override
   Widget build(BuildContext context) {
+    final queNumProvider = Provider.of<QueNumProvider>(context);
+    final queNum = queNumProvider.queNum;
+    final queCount = queNumProvider.queCount;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: PopScope(
@@ -62,14 +70,18 @@ class _QuizPageState extends State<QuizPage> {
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: QuizProgressIndicator(quizData: quizData),
+                          child: QuizProgressIndicator(
+                            queNum: queNum,
+                            queCount: queCount,
+                          ),
                         ),
                         QuestionTile(
-                          queNumber: 1,
-                          queString: quizData!.questions[0].description,
+                          queNumber: queNum,
+                          queString:
+                              quizData!.questions[queNum - 1].description,
                         ),
                         Options(
-                          options: quizData!.questions[0].options,
+                          options: quizData!.questions[queNum - 1].options,
                         ),
                       ],
                     )
@@ -125,10 +137,13 @@ class QuizHeader extends StatelessWidget {
 class QuizProgressIndicator extends StatelessWidget {
   const QuizProgressIndicator({
     super.key,
-    required this.quizData,
+    // required this.quizData,
+    required this.queNum,
+    required this.queCount,
   });
 
-  final QuizTopicModel? quizData;
+  final int queNum;
+  final int queCount;
 
   @override
   Widget build(BuildContext context) {
@@ -139,7 +154,7 @@ class QuizProgressIndicator extends StatelessWidget {
       children: [
         Expanded(
           child: LinearProgressIndicator(
-            value: 1 / quizData!.questionsCount,
+            value: (queNum - 1) / queCount,
             backgroundColor: Theme.of(context).colorScheme.onSecondary,
             color: Theme.of(context).colorScheme.secondary,
             borderRadius: BorderRadius.circular(10),
@@ -147,7 +162,7 @@ class QuizProgressIndicator extends StatelessWidget {
           ),
         ),
         Text(
-          '1/${quizData!.questionsCount}',
+          '${queNum - 1}/$queCount',
           style: TextStyle(
             fontWeight: FontWeight.w900,
             color: Theme.of(context).colorScheme.onSurface,
@@ -169,29 +184,18 @@ class Options extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Flexible(
-      child: Container(
-        decoration: BoxDecoration(
-          border: Border.all(width: 2),
-          borderRadius: BorderRadius.circular(25),
-        ),
-        padding: const EdgeInsets.all(5),
-        child: ClipRRect(
-          borderRadius: BorderRadius.circular(20),
-          clipBehavior: Clip.hardEdge,
-          child: Scrollbar(
-            thickness: 5,
-            radius: const Radius.circular(10),
-            child: SingleChildScrollView(
-              child: Column(
-                spacing: 10,
-                children: List.generate(options.length, (index) {
-                  return OptionsTile(
-                    data: options[index].description,
-                    isSelected: options[index].isCorrect,
-                  );
-                }),
-              ),
-            ),
+      child: Scrollbar(
+        thickness: 5,
+        radius: const Radius.circular(10),
+        child: SingleChildScrollView(
+          child: Column(
+            spacing: 20,
+            children: List.generate(options.length, (index) {
+              return OptionsTile(
+                data: options[index].description,
+                isSelected: options[index].isCorrect,
+              );
+            }),
           ),
         ),
       ),

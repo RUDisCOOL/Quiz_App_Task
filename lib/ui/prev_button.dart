@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-
+import 'package:provider/provider.dart';
+import 'package:quiz_app_flutter_task/providers/que_num_provider.dart';
 
 class PrevButton extends StatelessWidget {
   const PrevButton({
@@ -8,8 +9,11 @@ class PrevButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final queNumProvider = Provider.of<QueNumProvider>(context);
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        queNumProvider.prevQuestion();
+      },
       borderRadius: BorderRadius.circular(50),
       child: Container(
         decoration: BoxDecoration(
