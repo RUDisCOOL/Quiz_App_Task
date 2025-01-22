@@ -6,6 +6,7 @@ import 'package:quiz_app_flutter_task/pages/instructions_page.dart';
 import 'package:quiz_app_flutter_task/pages/quiz_page.dart';
 import 'package:quiz_app_flutter_task/pages/solution_page.dart';
 import 'package:quiz_app_flutter_task/providers/que_num_provider.dart';
+import 'package:quiz_app_flutter_task/providers/selected_options_provider.dart';
 import 'package:quiz_app_flutter_task/themes/light_theme.dart';
 
 void main() {
@@ -22,7 +23,18 @@ class MainApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider<QueNumProvider>(
           create: (context) => QueNumProvider(),
-        )
+        ),
+        ChangeNotifierProxyProvider<QueNumProvider, SelectedOptionsProvider>(
+          update: (context, queNumProvider, selectedOptionsProvider) {
+            return SelectedOptionsProvider(
+              queNumProvider: queNumProvider,
+              quizData: selectedOptionsProvider?.quizData,
+            );
+          },
+          create: (context) => SelectedOptionsProvider(
+            queNumProvider: context.read<QueNumProvider>(),
+          ),
+        ),
       ],
       child: MaterialApp(
         initialRoute: '/Home',

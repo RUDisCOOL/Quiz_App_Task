@@ -1,13 +1,25 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:quiz_app_flutter_task/providers/selected_options_provider.dart';
 
 class OptionsTile extends StatelessWidget {
-  const OptionsTile({super.key, required this.data, required this.isSelected});
+  const OptionsTile({
+    super.key,
+    required this.data,
+    required this.isSelected,
+    required this.index,
+  });
   final bool isSelected;
   final String data;
+  final int index;
+
   @override
   Widget build(BuildContext context) {
+    final selectOptProvider = Provider.of<SelectedOptionsProvider>(context);
     return InkWell(
-      onTap: () {},
+      onTap: () {
+        selectOptProvider.selectOption(index);
+      },
       borderRadius: BorderRadius.circular(25),
       child: Container(
         padding: const EdgeInsets.all(10),

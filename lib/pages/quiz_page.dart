@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter_task/models/options_model.dart';
 import 'package:quiz_app_flutter_task/models/quiz_topic_model.dart';
 import 'package:quiz_app_flutter_task/providers/que_num_provider.dart';
+import 'package:quiz_app_flutter_task/providers/selected_options_provider.dart';
 import 'package:quiz_app_flutter_task/services/get_quiz.dart';
 import 'package:quiz_app_flutter_task/ui/next_button.dart';
 import 'package:quiz_app_flutter_task/ui/options_tile.dart';
@@ -17,14 +18,17 @@ class QuizPage extends StatefulWidget {
 
 class _QuizPageState extends State<QuizPage> {
   bool isVisible = false;
-  QuizTopicModel? quizData;
 
   fetchQuizData(BuildContext context) async {
+    QuizTopicModel? quizData;
     final queNumProvider = Provider.of<QueNumProvider>(context, listen: false);
+    final selectedOptProvider =
+        Provider.of<SelectedOptionsProvider>(context, listen: false);
     quizData = await GetQuiz().getQuizData();
     if (quizData != null) {
       queNumProvider.queNum = 1;
-      queNumProvider.queCount = quizData!.questionsCount;
+      queNumProvider.queCount = quizData.questionsCount;
+      selectedOptProvider.quizData = quizData;
       setState(() {
         isVisible = true;
       });
@@ -40,6 +44,8 @@ class _QuizPageState extends State<QuizPage> {
   @override
   Widget build(BuildContext context) {
     final queNumProvider = Provider.of<QueNumProvider>(context);
+    final selectedOptProvider =
+        Provider.of<SelectedOptionsProvider>(context, listen: true);
     final queNum = queNumProvider.queNum;
     final queCount = queNumProvider.queCount;
     return Scaffold(
@@ -63,7 +69,7 @@ class _QuizPageState extends State<QuizPage> {
                   ? Column(
                       spacing: 20,
                       children: [
-                        QuizHeader(quizData: quizData),
+                        QuizHeader(quizData: selectedOptProvider.quizData),
                         const Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [PrevButton(), NextButton()],
@@ -77,11 +83,12 @@ class _QuizPageState extends State<QuizPage> {
                         ),
                         QuestionTile(
                           queNumber: queNum,
-                          queString:
-                              quizData!.questions[queNum - 1].description,
+                          queString: selectedOptProvider
+                              .quizData!.questions[queNum - 1].description,
                         ),
                         Options(
-                          options: quizData!.questions[queNum - 1].options,
+                          options: selectedOptProvider
+                              .quizData!.questions[queNum - 1].options,
                         ),
                       ],
                     )
@@ -193,7 +200,8 @@ class Options extends StatelessWidget {
             children: List.generate(options.length, (index) {
               return OptionsTile(
                 data: options[index].description,
-                isSelected: options[index].isCorrect,
+                isSelected: options[index].unanswered,
+                index: index,
               );
             }),
           ),
