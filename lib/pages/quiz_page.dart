@@ -3,11 +3,12 @@ import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter_task/models/options_model.dart';
 import 'package:quiz_app_flutter_task/models/quiz_topic_model.dart';
 import 'package:quiz_app_flutter_task/providers/que_num_provider.dart';
-import 'package:quiz_app_flutter_task/providers/selected_options_provider.dart';
+import 'package:quiz_app_flutter_task/providers/quiz_data_provider.dart';
 import 'package:quiz_app_flutter_task/services/get_quiz.dart';
 import 'package:quiz_app_flutter_task/ui/next_button.dart';
 import 'package:quiz_app_flutter_task/ui/options_tile.dart';
 import 'package:quiz_app_flutter_task/ui/prev_button.dart';
+import 'package:quiz_app_flutter_task/ui/submit_button.dart';
 
 class QuizPage extends StatefulWidget {
   const QuizPage({super.key});
@@ -22,13 +23,13 @@ class _QuizPageState extends State<QuizPage> {
   fetchQuizData(BuildContext context) async {
     QuizTopicModel? quizData;
     final queNumProvider = Provider.of<QueNumProvider>(context, listen: false);
-    final selectedOptProvider =
-        Provider.of<SelectedOptionsProvider>(context, listen: false);
+    final quizDataProvider =
+        Provider.of<QuizDataProvider>(context, listen: false);
     quizData = await GetQuiz().getQuizData();
     if (quizData != null) {
       queNumProvider.queNum = 1;
       queNumProvider.queCount = quizData.questionsCount;
-      selectedOptProvider.quizData = quizData;
+      quizDataProvider.quizData = quizData;
       setState(() {
         isVisible = true;
       });
@@ -43,11 +44,6 @@ class _QuizPageState extends State<QuizPage> {
 
   @override
   Widget build(BuildContext context) {
-    final queNumProvider = Provider.of<QueNumProvider>(context);
-    final selectedOptProvider =
-        Provider.of<SelectedOptionsProvider>(context, listen: true);
-    final queNum = queNumProvider.queNum;
-    final queCount = queNumProvider.queCount;
     return Scaffold(
       backgroundColor: Theme.of(context).colorScheme.surface,
       body: PopScope(
@@ -64,40 +60,47 @@ class _QuizPageState extends State<QuizPage> {
         child: SafeArea(
           child: Padding(
             padding: const EdgeInsets.all(10),
-            child: Center(
-              child: isVisible
-                  ? Column(
-                      spacing: 20,
-                      children: [
-                        QuizHeader(quizData: selectedOptProvider.quizData),
-                        const Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [PrevButton(), NextButton()],
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 10),
-                          child: QuizProgressIndicator(
-                            queNum: queNum,
-                            queCount: queCount,
+            child: Consumer2<QuizDataProvider, QueNumProvider>(
+                builder: (context, quizDataProvider, queNumProvider, _) {
+              final queNum = queNumProvider.queNum;
+              final queCount = queNumProvider.queCount;
+              return Center(
+                child: isVisible
+                    ? Column(
+                        spacing: 20,
+                        children: [
+                          QuizHeader(quizData: quizDataProvider.quizData),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 10),
+                            child: QuizProgressIndicator(
+                              queNum: queNum,
+                              queCount: queCount,
+                            ),
                           ),
-                        ),
-                        QuestionTile(
-                          queNumber: queNum,
-                          queString: selectedOptProvider
-                              .quizData!.questions[queNum - 1].description,
-                        ),
-                        Options(
-                          options: selectedOptProvider
-                              .quizData!.questions[queNum - 1].options,
-                        ),
-                      ],
-                    )
-                  : const CircularProgressIndicator(
-                      strokeCap: StrokeCap.round,
-                      strokeWidth: 6,
-                      // value: 0.5,
-                    ),
-            ),
+                          QuestionTile(
+                            queNumber: queNum,
+                            queString: quizDataProvider
+                                .quizData!.questions[queNum - 1].description,
+                          ),
+                          Options(
+                            options: quizDataProvider
+                                .quizData!.questions[queNum - 1].options,
+                          ),
+                          const Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [PrevButton(), NextButton()],
+                          ),
+                          const SubmitButton(),
+                        ],
+                      )
+                    : const CircularProgressIndicator(
+                        strokeCap: StrokeCap.round,
+                        strokeWidth: 6,
+                        // value: 0.5,
+                      ),
+              );
+            }),
           ),
         ),
       ),
@@ -181,22 +184,23 @@ class QuizProgressIndicator extends StatelessWidget {
 }
 
 class Options extends StatelessWidget {
-  const Options({
+  Options({
     super.key,
     required this.options,
   });
 
   final List<Option> options;
-
+  final scrollController = ScrollController();
   @override
   Widget build(BuildContext context) {
     return Flexible(
       child: Scrollbar(
-        thickness: 5,
+        controller: scrollController,
         radius: const Radius.circular(10),
         child: SingleChildScrollView(
+          controller: scrollController,
           child: Column(
-            spacing: 20,
+            spacing: 10,
             children: List.generate(options.length, (index) {
               return OptionsTile(
                 data: options[index].description,

@@ -15,7 +15,7 @@ ThemeData lightTheme = ThemeData.light(useMaterial3: true).copyWith(
     surface: Colors.blue.shade50,
     onSurface: Colors.black,
     tertiary: Colors.grey.shade200,
-    onTertiary: Colors.white,
+    onTertiary: Colors.black,
   ),
   // primaryColor: Colors.red,
 );

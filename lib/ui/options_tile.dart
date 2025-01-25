@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:quiz_app_flutter_task/providers/selected_options_provider.dart';
+import 'package:quiz_app_flutter_task/providers/quiz_data_provider.dart';
 
 class OptionsTile extends StatelessWidget {
   const OptionsTile({
@@ -15,10 +15,10 @@ class OptionsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final selectOptProvider = Provider.of<SelectedOptionsProvider>(context);
+    final quizDataProvider = Provider.of<QuizDataProvider>(context);
     return InkWell(
       onTap: () {
-        selectOptProvider.selectOption(index);
+        quizDataProvider.selectOption(index);
       },
       borderRadius: BorderRadius.circular(25),
       child: Container(
@@ -34,7 +34,11 @@ class OptionsTile extends StatelessWidget {
           mainAxisSize: MainAxisSize.max,
           spacing: 10,
           children: [
-            Checkbox(value: isSelected, onChanged: (_) {}),
+            Checkbox(
+                value: isSelected,
+                onChanged: (_) {
+                  quizDataProvider.selectOption(index);
+                }),
             // Divider()
             Flexible(
               child: Text(

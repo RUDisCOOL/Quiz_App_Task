@@ -21,7 +21,7 @@ class PrevButton extends StatelessWidget {
           borderRadius: BorderRadius.circular(50),
         ),
         margin: const EdgeInsets.all(8),
-        padding: const EdgeInsets.all(5).copyWith(right: 13),
+        padding: const EdgeInsets.all(8),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           spacing: 10,
@@ -37,6 +37,7 @@ class PrevButton extends StatelessWidget {
                   .bodyLarge
                   ?.copyWith(color: Theme.of(context).colorScheme.onSecondary),
             ),
+            const SizedBox(),
           ],
         ),
       ),

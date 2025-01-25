@@ -4,9 +4,10 @@ import 'package:provider/provider.dart';
 import 'package:quiz_app_flutter_task/pages/home_page.dart';
 import 'package:quiz_app_flutter_task/pages/instructions_page.dart';
 import 'package:quiz_app_flutter_task/pages/quiz_page.dart';
-import 'package:quiz_app_flutter_task/pages/solution_page.dart';
+import 'package:quiz_app_flutter_task/pages/result_page.dart';
 import 'package:quiz_app_flutter_task/providers/que_num_provider.dart';
-import 'package:quiz_app_flutter_task/providers/selected_options_provider.dart';
+import 'package:quiz_app_flutter_task/providers/quiz_data_provider.dart';
+import 'package:quiz_app_flutter_task/themes/dark_theme.dart';
 import 'package:quiz_app_flutter_task/themes/light_theme.dart';
 
 void main() {
@@ -24,24 +25,26 @@ class MainApp extends StatelessWidget {
         ChangeNotifierProvider<QueNumProvider>(
           create: (context) => QueNumProvider(),
         ),
-        ChangeNotifierProxyProvider<QueNumProvider, SelectedOptionsProvider>(
-          update: (context, queNumProvider, selectedOptionsProvider) {
-            return SelectedOptionsProvider(
+        ChangeNotifierProxyProvider<QueNumProvider, QuizDataProvider>(
+          update: (context, queNumProvider, quizDataProvider) {
+            return QuizDataProvider(
               queNumProvider: queNumProvider,
-              quizData: selectedOptionsProvider?.quizData,
+              quizData: quizDataProvider?.quizData,
             );
           },
-          create: (context) => SelectedOptionsProvider(
+          create: (context) => QuizDataProvider(
             queNumProvider: context.read<QueNumProvider>(),
           ),
         ),
       ],
       child: MaterialApp(
         initialRoute: '/Home',
+        themeMode: ThemeMode.system,
         theme: lightTheme,
+        darkTheme: darkTheme,
         routes: {
           '/Quiz': (context) => const QuizPage(),
-          '/Solution': (context) => const SolutionPage(),
+          '/Result': (context) => const ResultPage(),
           '/Home': (context) => const HomePage(),
           '/Instructions': (context) => const InstructionsPage(),
         },
